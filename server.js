@@ -1,9 +1,12 @@
+// At the very top of server.js
+require('dotenv').config(); // MUST be at the top to load .env variables
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
-const mongoose = require('mongoose'); // Import Mongoose
-const User = require('./models/User'); // Import the User model
+const mongoose = require('mongoose');
+const User = require('./models/User');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,14 +15,14 @@ const io = socketIo(server);
 const PORT = process.env.PORT || 3000;
 
 // --- MongoDB Connection ---
-const mongoURI = 'mongodb://localhost:27017/realtime_chat'; // For local MongoDB
-// OR for MongoDB Atlas:
-// const mongoURI = 'mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/realtime_chat?retryWrites=true&w=majority';
-// Remember to replace <username> and <password> if using Atlas!
+const mongoURI = 'mongodb://localhost:27017/realtime_chat'; // <--- THIS IS THE PROBLEM LINE
+// OR
+// const mongoURI = process.env.MONGODB_URI; // <--- THIS IS THE CORRECT LINE
 
 mongoose.connect(mongoURI)
     .then(() => console.log('MongoDB Connected successfully!'))
     .catch(err => console.error('MongoDB connection error:', err));
+
 
 // Middleware to parse JSON bodies
 app.use(express.json());
