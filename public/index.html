@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f4; margin: 0; }
+        .auth-container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .auth-container h2 { margin-bottom: 20px; color: #333; }
+        .auth-container input[type="text"], .auth-container input[type="password"] { width: calc(100% - 20px); padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .auth-container button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-bottom: 10px;}
+        .auth-container button:hover { background-color: #0056b3; }
+        .auth-container #message { color: red; margin-top: 10px; }
+        .switch-form { margin-top: 15px; font-size: 0.9em; color: #555; }
+        .switch-form a { color: #007bff; text-decoration: none; cursor: pointer; }
+        .switch-form a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2 id="formTitle">Login</h2>
+        <form id="authForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit" id="submitButton">Login</button>
+            <p id="message"></p>
+        </form>
+        <p class="switch-form">
+            Don't have an account? <a id="toggleForm">Register here.</a>
+        </p>
+    </div>
+
+    <script>
+        const formTitle = document.getElementById('formTitle');
+        const submitButton = document.getElementById('submitButton');
+        const toggleFormLink = document.getElementById('toggleForm');
+        const authForm = document.getElementById('authForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const messageElem = document.getElementById('message');
+
+        let isLoginMode = true; // State to track if we're in login or register mode
+
+        toggleFormLink.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                formTitle.textContent = 'Login';
+                submitButton.textContent = 'Login';
+                toggleFormLink.textContent = 'Register here.';
+            } else {
+                formTitle.textContent = 'Register';
+                submitButton.textContent = 'Register';
+                toggleFormLink.textContent = 'Login here.';
+            }
+            messageElem.textContent = ''; // Clear messages on mode switch
+            usernameInput.value = '';
+            passwordInput.value = '';
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            messageElem.textContent = ''; // Clear previous messages
+
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const successMessage = isLoginMode ? 'Login successful!' : 'Registration successful! You can now login.';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    messageElem.style.color = 'green';
+                    messageElem.textContent = successMessage;
+                    
+                    if (isLoginMode) {
+                        localStorage.setItem('loggedInUsername', data.username);
+                        window.location.href = '/chat.html'; // Redirect to chat page
+                    } else {
+                        // After successful registration, switch to login mode for user to log in
+                        isLoginMode = true;
+                        formTitle.textContent = 'Login';
+                        submitButton.textContent = 'Login';
+                        toggleFormLink.textContent = 'Register here.';
+                        usernameInput.value = username; // Pre-fill username
+                        passwordInput.value = ''; // Clear password
+                    }
+
+                } else {
+                    messageElem.style.color = 'red';
+                    messageElem.textContent = data.message || (isLoginMode ? 'Login failed.' : 'Registration failed.');
+                }
+            } catch (error) {
+                console.error('Error during authentication:', error);
+                messageElem.style.color = 'red';
+                messageElem.textContent = 'An error occurred. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>
