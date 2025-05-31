@@ -15,9 +15,9 @@ const io = socketIo(server);
 const PORT = process.env.PORT || 3000;
 
 // --- MongoDB Connection ---
-const mongoURI = 'mongodb://localhost:27017/realtime_chat'; // <--- THIS IS THE PROBLEM LINE
+// const mongoURI = 'mongodb://localhost:27017/realtime_chat';
 // OR
-// const mongoURI = process.env.MONGODB_URI; // <--- THIS IS THE CORRECT LINE
+const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI)
     .then(() => console.log('MongoDB Connected successfully!'))
